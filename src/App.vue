@@ -60,7 +60,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-btn color="primary" @click="addAluno">Salvar</v-btn>
-                <v-btn @click="addAlunoDialog = false">Cancelar</v-btn>
+                <v-btn @click="cancelAddAluno">Cancelar</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -76,8 +76,8 @@ export default {
   name: 'App',
   data() {
     return {
-      drawer: false,
-      selectedPage: null,
+      drawer: true,
+      selectedPage: 'alunos',
       searchText: '',
       alunos: [],
       headers: [
@@ -94,13 +94,18 @@ export default {
 
     };
   },
+
+  created() {
+    this.selectedPage = 'alunos';
+    this.getAlunos();
+  },
+
   methods: {
     selectPage(page) {
-      this.selectedPage = page;
-      if (page === 'alunos') {
+      this.selectedPage = 'alunos';
+      if (page == 'alunos') {
         this.getAlunos();
       }
-
     },
 
     addAluno() {
@@ -121,6 +126,15 @@ export default {
           console.error(error);
         });
     },
+
+    cancelAddAluno() {
+      this.addAlunoDialog = false;
+      this.RA = '';
+      this.nome = '';
+      this.cpf = '';
+      this.email = '';
+    },
+
     show() {
       let params = {};
       if (this.searchText) {
@@ -157,6 +171,7 @@ export default {
     openAddAlunoDialog() {
       this.addAlunoDialog = true;
     },
+
     updateAluno(item) {
       axios.put(`http://localhost:8000/api/alunos/${item.id}`, item)
         .then(response => {
