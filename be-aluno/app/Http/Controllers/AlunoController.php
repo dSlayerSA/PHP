@@ -70,18 +70,24 @@ class AlunoController extends Controller
     return response()->json($alunos);
 }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
+public function update(Request $request, $RA)
+{
+    $aluno = Aluno::where('RA', $RA)->firstOrFail();
+
+    if ($request->has('nome')) {
+        $aluno->nome = $request->input('nome');
+    }
+    if ($request->has('cpf')) {
+        $aluno->cpf = $request->input('cpf');
+    }
+    if ($request->has('email')) {
+        $aluno->email = $request->input('email');
     }
 
+    $aluno->save();
+
+    return response()->json(['message' => 'Aluno atualizado com sucesso!', 'data' => $aluno], 200);
+}
     /**
      * Remove the specified resource from storage.
      *

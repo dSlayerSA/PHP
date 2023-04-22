@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Aluno extends Model
 {
     protected $table = 'alunos';
+    protected $primaryKey = 'RA';
     public $timestamps = false;
     use HasFactory;
 }

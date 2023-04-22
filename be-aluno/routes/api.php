@@ -24,3 +24,4 @@ Route::get('alunos/show', 'App\Http\Controllers\AlunoController@show');
 
 Route::post('/alunos/store', 'App\Http\Controllers\AlunoController@store');
 
+Route::put('/alunos/{RA}', 'App\Http\Controllers\AlunoController@update');
