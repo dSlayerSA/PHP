@@ -88,14 +88,16 @@ public function update(Request $request, $RA)
 
     return response()->json(['message' => 'Aluno atualizado com sucesso!', 'data' => $aluno], 200);
 }
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+ 
+public function destroy($id)
+{
+    $aluno = Aluno::find($id);
+    if (!$aluno) {
+        return response()->json(['error' => 'Aluno não encontrado'], 404);
     }
+
+    $aluno->delete();
+
+    return response()->json(['message' => 'Aluno excluído com sucesso!']);
+}
 }
