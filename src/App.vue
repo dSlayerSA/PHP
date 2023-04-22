@@ -69,3 +69,104 @@
     </v-main>
   </v-app>
 </template>
+<script>
+import axios from 'axios';
+
+export default {
+  name: 'App',
+  data() {
+    return {
+      drawer: false,
+      selectedPage: null,
+      searchText: '',
+      alunos: [],
+      headers: [
+        { text: 'Registro Academico', value: 'RA' },
+        { text: 'Nome', value: 'nome' },
+        { text: 'CPF', value: 'cpf' },
+        { text: 'EMAIL', value: 'email' },
+      ],
+      RA: '',
+      nome: '',
+      cpf: '',
+      email: '',
+      addAlunoDialog: false,
+
+    };
+  },
+  methods: {
+    selectPage(page) {
+      this.selectedPage = page;
+      if (page === 'alunos') {
+        this.getAlunos();
+      }
+
+    },
+
+    addAluno() {
+      const formData = {
+        RA: this.RA,
+        nome: this.nome,
+        cpf: this.cpf,
+        email: this.email
+      };
+      axios.post('http://localhost:8000/api/alunos/store', formData)
+        .then(response => {
+          console.log(response.data);
+          this.addAlunoDialog = false;
+          this.$refs.form.reset();
+          this.$emit('aluno-adicionado', response.data.data);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    },
+    show() {
+      let params = {};
+      if (this.searchText) {
+        if (this.searchText.match(/^\d+$/)) {
+          if (this.searchText.length >= 11 && this.searchText.length <= 14) {
+            // CPF
+            params.cpf = this.searchText.replace(/[^0-9]/g, ''); // Remove todos os caracteres que não são números
+          } else if (this.searchText.length <= 4) {
+            // RA
+            params.RA = this.searchText;
+          }
+        }
+      }
+      axios.get('http://localhost:8000/api/alunos/show', {
+        params: params
+      })
+        .then(response => {
+          this.alunos = response.data;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+
+    getAlunos() {
+      axios.get('http://localhost:8000/api/alunos')
+        .then(response => {
+          this.alunos = response.data;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    openAddAlunoDialog() {
+      this.addAlunoDialog = true;
+    },
+    updateAluno(item) {
+      axios.put(`http://localhost:8000/api/alunos/${item.id}`, item)
+        .then(response => {
+          console.log(response.data);
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+
+  }
+};
+</script>
