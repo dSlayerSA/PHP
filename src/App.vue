@@ -27,19 +27,41 @@
           </v-card-text>
 
           <v-data-table v-if="alunos.length > 0" :headers="headers" :items="alunos">
-            <template v-slot:RA="{ item }">
-              <v-text-field v-model="item.RA" dense outlined hide-details></v-text-field>
-            </template>
-            <template v-slot:nome="{ item }">
-              <v-text-field v-model="item.nome" dense outlined hide-details></v-text-field>
-            </template>
-            <template v-slot:cpf="{ item }">
-              <v-text-field v-model="item.cpf" dense outlined hide-details></v-text-field>
-            </template>
-            <template v-slot:email="{ item }">
-              <v-text-field v-model="item.email" dense outlined hide-details></v-text-field>
-            </template>
-          </v-data-table>
+  <template v-slot:item="{ item }">
+    <tr>
+      <td ><v-text-field v-model="item.RA" solo flat readonly ></v-text-field></td>
+      <td><v-text-field v-model="item.nome" solo flat readonly></v-text-field></td>
+      <td><v-text-field v-model="item.cpf" solo flat readonly></v-text-field></td>
+      <td><v-text-field v-model="item.email" solo flat readonly></v-text-field></td>
+      
+      <td>
+        <v-menu offset-y>
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="editAluno(item)">
+              <v-list-item-icon>
+                <v-icon>mdi-pencil</v-icon>
+              </v-list-item-icon>
+              <v-list-item-title>Editar</v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="deleteAluno(item)">
+              <v-list-item-icon>
+                <v-icon>mdi-delete</v-icon>
+              </v-list-item-icon>
+              <v-list-item-title>Excluir</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </td>
+    </tr>
+  </template>
+</v-data-table>
+
+
 
           <v-alert v-else :value="true" color="warning" icon="mdi-alert-circle-outline">
             Nenhum resultado encontrado.
@@ -69,6 +91,15 @@
     </v-main>
   </v-app>
 </template>
+
+<style lang="scss">  
+  tbody {
+     tr:hover {
+        background-color: transparent !important;
+     }
+  }
+</style>
+
 <script>
 import axios from 'axios';
 
