@@ -17,3 +17,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('alunos', 'App\Http\Controllers\AlunoController@index');
+
+Route::get('alunos/show', 'App\Http\Controllers\AlunoController@show');
+
+Route::post('/alunos/store', 'App\Http\Controllers\AlunoController@store');
+
