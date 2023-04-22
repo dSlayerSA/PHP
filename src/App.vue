@@ -42,7 +42,7 @@
                       </v-btn>
                     </template>
                     <v-list>
-                      <v-list-item @click="editAluno(item)">
+                      <v-list-item @click="selecionaAlunoParaEditar(item)">
                         <v-list-item-icon>
                           <v-icon>mdi-pencil</v-icon>
                         </v-list-item-icon>
@@ -86,6 +86,28 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+
+          <v-dialog v-model="editAlunoDialog" max-width="600px">
+            <v-card>
+              <v-card-title>
+                Editar Aluno
+              </v-card-title>
+              <v-card-text>
+                <v-form>
+                  <v-text-field v-model="alunoSelecionado.RA" label="RA" readonly outlined></v-text-field>
+                  <v-text-field v-model="alunoSelecionado.nome" label="Nome" outlined></v-text-field>
+                  <v-text-field v-model="alunoSelecionado.cpf" label="CPF" outlined></v-text-field>
+                  <v-text-field v-model="alunoSelecionado.email" label="Email" outlined></v-text-field>
+                </v-form>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn color="primary" @click="salvarAlunoEditado">Salvar</v-btn>
+                <v-btn @click="cancelaEditAluno">Cancelar</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
+
         </v-card>
       </v-container>
     </v-main>
@@ -121,6 +143,10 @@ export default {
       cpf: '',
       email: '',
       addAlunoDialog: false,
+
+      editAlunoDialog: false, // estado do diálogo
+      alunoSelecionado: {},
+      alunoEditando: {}
 
     };
   },
@@ -165,6 +191,64 @@ export default {
       this.email = '';
     },
 
+    cancelaEditAluno() {
+      this.addAlunoDialog = false;
+      this.RA = '';
+      this.nome = '';
+      this.cpf = '';
+      this.email = '';
+    },
+
+    selecionaAlunoParaEditar(aluno) {
+  // Salva as informações do aluno antes de editar
+  this.alunoAntesDeEditar = {
+    RA: aluno.RA,
+    nome: aluno.nome,
+    cpf: aluno.cpf,
+    email: aluno.email
+  };
+  this.alunoSelecionado = aluno;
+  this.editAlunoDialog = true; // abre o dialog
+},
+salvarAlunoEditado() {
+  const formData = new FormData();
+  const alunoOriginal = { ...this.alunoSelecionado };
+  const alunoEditado = {};
+  const editData = {};
+
+  // Copia as informações do aluno editado para a variável alunoEditando
+  this.alunoEditando = { ...this.alunoSelecionado };
+
+  // Atualiza as informações do aluno editado com as informações preenchidas no formulário
+  for (const propriedade in this.alunoEditando) {
+    if (this.alunoEditando[propriedade] !== this.alunoAntesDeEditar[propriedade]) {
+      formData.append(propriedade, this.alunoEditando[propriedade]);
+      alunoEditado[propriedade] = this.alunoEditando[propriedade];
+      editData[propriedade] = `${propriedade}: ${this.alunoEditando[propriedade]}`;
+    }
+  }
+
+  // Verifica se houve alteração no aluno
+  const haAlteracao = Object.keys(alunoEditado).length > 0;
+
+  // Se houver alteração, envia a solicitação PUT para atualizar o aluno
+  if (haAlteracao) {
+    axios.put(`http://localhost:8000/api/alunos/${alunoOriginal.RA}`, alunoEditado)
+      .then(response => {
+        console.log(response.data);
+        console.log(`Informações do aluno antes da edição: ${JSON.stringify(alunoOriginal)}`);
+        console.log(`Informações do aluno após a edição: ${JSON.stringify(this.alunoEditando)}`);
+        console.log(`Alterações feitas no aluno: ${JSON.stringify(editData)}`);
+        this.editAlunoDialog = false;
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  } else {
+    console.log('Nenhuma alteração foi feita no aluno.');
+    this.editAlunoDialog = false;
+  }
+},
     show() {
       let params = {};
       if (this.searchText) {
@@ -201,17 +285,9 @@ export default {
     openAddAlunoDialog() {
       this.addAlunoDialog = true;
     },
-
-    updateAluno(item) {
-      axios.put(`http://localhost:8000/api/alunos/${item.id}`, item)
-        .then(response => {
-          console.log(response.data);
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    },
-
+    openEditAlunoDialog() {
+      this.editAlunoDialog = true;
+    }
   }
 };
 </script>
