@@ -26,40 +26,40 @@
             <v-btn @click="show" color="primary">Pesquisar</v-btn>
           </v-card-text>
 
-          <v-data-table v-if="alunos.length > 0" :headers="headers" :items="alunos">
-  <template v-slot:item="{ item }">
-    <tr>
-      <td ><v-text-field v-model="item.RA" solo flat readonly ></v-text-field></td>
-      <td><v-text-field v-model="item.nome" solo flat readonly></v-text-field></td>
-      <td><v-text-field v-model="item.cpf" solo flat readonly></v-text-field></td>
-      <td><v-text-field v-model="item.email" solo flat readonly></v-text-field></td>
-      
-      <td>
-        <v-menu offset-y>
-          <template v-slot:activator="{ on }">
-            <v-btn icon v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="editAluno(item)">
-              <v-list-item-icon>
-                <v-icon>mdi-pencil</v-icon>
-              </v-list-item-icon>
-              <v-list-item-title>Editar</v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="deleteAluno(item)">
-              <v-list-item-icon>
-                <v-icon>mdi-delete</v-icon>
-              </v-list-item-icon>
-              <v-list-item-title>Excluir</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </td>
-    </tr>
-  </template>
-</v-data-table>
+          <v-data-table dense v-if="alunos.length > 0" :headers="headers" :items="alunos">
+            <template v-slot:item="{ item }">
+              <tr>
+                <td><v-text-field v-model="item.RA" solo dense flat readonly></v-text-field></td>
+                <td><v-text-field v-model="item.nome" solo dense flat readonly></v-text-field></td>
+                <td><v-text-field v-model="item.cpf" solo dense flat readonly></v-text-field></td>
+                <td><v-text-field v-model="item.email" solo dense flat readonly></v-text-field></td>
+
+                <td>
+                  <v-menu offset-y>
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon v-on="on">
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list>
+                      <v-list-item @click="editAluno(item)">
+                        <v-list-item-icon>
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Editar</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="deleteAluno(item)">
+                        <v-list-item-icon>
+                          <v-icon>mdi-delete</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Excluir</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
 
 
 
@@ -92,11 +92,10 @@
   </v-app>
 </template>
 
-<style lang="scss">  
-  tbody {
-     tr:hover {
-        background-color: transparent !important;
-     }
+<style lang="scss">  tbody {
+    tr:hover {
+      background-color: transparent !important;
+    }
   }
 </style>
 
