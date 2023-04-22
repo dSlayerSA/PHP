@@ -48,7 +48,7 @@
                         </v-list-item-icon>
                         <v-list-item-title>Editar</v-list-item-title>
                       </v-list-item>
-                      <v-list-item @click="deleteAluno(item)">
+                      <v-list-item @click="excluirAluno(item.RA)">
                         <v-list-item-icon>
                           <v-icon>mdi-delete</v-icon>
                         </v-list-item-icon>
@@ -146,7 +146,8 @@ export default {
 
       editAlunoDialog: false, // estado do diálogo
       alunoSelecionado: {},
-      alunoEditando: {}
+      alunoEditando: {},
+      aluno: {}
 
     };
   },
@@ -200,55 +201,55 @@ export default {
     },
 
     selecionaAlunoParaEditar(aluno) {
-  // Salva as informações do aluno antes de editar
-  this.alunoAntesDeEditar = {
-    RA: aluno.RA,
-    nome: aluno.nome,
-    cpf: aluno.cpf,
-    email: aluno.email
-  };
-  this.alunoSelecionado = aluno;
-  this.editAlunoDialog = true; // abre o dialog
-},
-salvarAlunoEditado() {
-  const formData = new FormData();
-  const alunoOriginal = { ...this.alunoSelecionado };
-  const alunoEditado = {};
-  const editData = {};
+      // Salva as informações do aluno antes de editar
+      this.alunoAntesDeEditar = {
+        RA: aluno.RA,
+        nome: aluno.nome,
+        cpf: aluno.cpf,
+        email: aluno.email
+      };
+      this.alunoSelecionado = aluno;
+      this.editAlunoDialog = true; // abre o dialog
+    },
+    salvarAlunoEditado() {
+      const formData = new FormData();
+      const alunoOriginal = { ...this.alunoSelecionado };
+      const alunoEditado = {};
+      const editData = {};
 
-  // Copia as informações do aluno editado para a variável alunoEditando
-  this.alunoEditando = { ...this.alunoSelecionado };
+      // Copia as informações do aluno editado para a variável alunoEditando
+      this.alunoEditando = { ...this.alunoSelecionado };
 
-  // Atualiza as informações do aluno editado com as informações preenchidas no formulário
-  for (const propriedade in this.alunoEditando) {
-    if (this.alunoEditando[propriedade] !== this.alunoAntesDeEditar[propriedade]) {
-      formData.append(propriedade, this.alunoEditando[propriedade]);
-      alunoEditado[propriedade] = this.alunoEditando[propriedade];
-      editData[propriedade] = `${propriedade}: ${this.alunoEditando[propriedade]}`;
-    }
-  }
+      // Atualiza as informações do aluno editado com as informações preenchidas no formulário
+      for (const propriedade in this.alunoEditando) {
+        if (this.alunoEditando[propriedade] !== this.alunoAntesDeEditar[propriedade]) {
+          formData.append(propriedade, this.alunoEditando[propriedade]);
+          alunoEditado[propriedade] = this.alunoEditando[propriedade];
+          editData[propriedade] = `${propriedade}: ${this.alunoEditando[propriedade]}`;
+        }
+      }
 
-  // Verifica se houve alteração no aluno
-  const haAlteracao = Object.keys(alunoEditado).length > 0;
+      // Verifica se houve alteração no aluno
+      const haAlteracao = Object.keys(alunoEditado).length > 0;
 
-  // Se houver alteração, envia a solicitação PUT para atualizar o aluno
-  if (haAlteracao) {
-    axios.put(`http://localhost:8000/api/alunos/${alunoOriginal.RA}`, alunoEditado)
-      .then(response => {
-        console.log(response.data);
-        console.log(`Informações do aluno antes da edição: ${JSON.stringify(alunoOriginal)}`);
-        console.log(`Informações do aluno após a edição: ${JSON.stringify(this.alunoEditando)}`);
-        console.log(`Alterações feitas no aluno: ${JSON.stringify(editData)}`);
+      // Se houver alteração, envia a solicitação PUT para atualizar o aluno
+      if (haAlteracao) {
+        axios.put(`http://localhost:8000/api/alunos/${alunoOriginal.RA}`, alunoEditado)
+          .then(response => {
+            console.log(response.data);
+            console.log(`Informações do aluno antes da edição: ${JSON.stringify(alunoOriginal)}`);
+            console.log(`Informações do aluno após a edição: ${JSON.stringify(this.alunoEditando)}`);
+            console.log(`Alterações feitas no aluno: ${JSON.stringify(editData)}`);
+            this.editAlunoDialog = false;
+          })
+          .catch(error => {
+            console.error(error);
+          });
+      } else {
+        console.log('Nenhuma alteração foi feita no aluno.');
         this.editAlunoDialog = false;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  } else {
-    console.log('Nenhuma alteração foi feita no aluno.');
-    this.editAlunoDialog = false;
-  }
-},
+      }
+    },
     show() {
       let params = {};
       if (this.searchText) {
@@ -282,6 +283,31 @@ salvarAlunoEditado() {
           console.log(error);
         });
     },
+
+
+    excluirAluno(RA) {
+      const confirmar = confirm(`Tem certeza que deseja excluir o aluno de RA ${RA}?`);
+      if (confirmar) {
+        axios.delete(`http://localhost:8000/api/alunos/${RA}`)
+          .then(response => {
+            console.log(response.data);
+            // Remover o aluno da lista de alunos
+            const index = this.alunos.findIndex(aluno => aluno.RA === RA);
+            if (index !== -1) {
+              this.alunos.splice(index, 1);
+            }
+          })
+          .catch(error => {
+            console.error(error);
+            if (error.response.status === 404) {
+              alert(`O aluno de RA ${RA} não foi encontrado na base de dados.`);
+            } else {
+              alert(`Ocorreu um erro ao excluir o aluno de RA ${RA}.`);
+            }
+          });
+      }
+    },
+
     openAddAlunoDialog() {
       this.addAlunoDialog = true;
     },
