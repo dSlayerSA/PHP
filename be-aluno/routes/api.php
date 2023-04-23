@@ -18,12 +18,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('alunos', 'App\Http\Controllers\AlunoController@index');
+Route::get('students', 'App\Http\Controllers\AlunoController@index');
 
-Route::get('alunos/show', 'App\Http\Controllers\AlunoController@show');
+Route::get('students/show', 'App\Http\Controllers\AlunoController@show');
 
-Route::post('/alunos/store', 'App\Http\Controllers\AlunoController@store');
+Route::post('/students/store', 'App\Http\Controllers\AlunoController@store');
 
-Route::put('/alunos/{RA}', 'App\Http\Controllers\AlunoController@update');
+Route::put('/students/{RA}', 'App\Http\Controllers\AlunoController@update');
 
-Route::delete('/alunos/{RA}', 'App\Http\Controllers\AlunoController@destroy');
+Route::delete('/students/{RA}', 'App\Http\Controllers\AlunoController@destroy');

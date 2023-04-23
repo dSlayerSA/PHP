@@ -4,21 +4,21 @@
       <v-btn icon @click="drawer = !drawer">
         <v-icon>mdi-menu</v-icon>
       </v-btn>
-      <v-toolbar-title>My App</v-toolbar-title>
+      <v-toolbar-title>Menu</v-toolbar-title>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" app>
       <v-list>
-        <v-list-item @click="selectPage('alunos')">
+        <v-list-item @click="selectPage('Students')">
           <v-list-item-title>Alunos</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
     <v-main>
       <v-container>
-        <v-card v-if="selectedPage === 'alunos'">
-          <v-card-title>Pesquisar Alunos
+        <v-card v-if="selectedPage === 'Students'">
+          <v-card-title>Pesquisar Students
             <v-spacer></v-spacer>
-            <v-btn color="primary" @click="openAddAlunoDialog">Adicionar Aluno</v-btn>
+            <v-btn color="primary" @click="AddStudentDialog">Adicionar Aluno</v-btn>
           </v-card-title>
 
           <v-card-text>
@@ -26,7 +26,7 @@
             <v-btn @click="show" color="primary">Pesquisar</v-btn>
           </v-card-text>
 
-          <v-data-table dense v-if="alunos.length > 0" :headers="headers" :items="alunos">
+          <v-data-table dense v-if="Students.length > 0" :headers="headers" :items="Students">
             <template v-slot:item="{ item }">
               <tr>
                 <td><v-text-field v-model="item.RA" solo dense flat readonly></v-text-field></td>
@@ -42,13 +42,13 @@
                       </v-btn>
                     </template>
                     <v-list>
-                      <v-list-item @click="selecionaAlunoParaEditar(item)">
+                      <v-list-item @click="selectEditStudent(item)">
                         <v-list-item-icon>
                           <v-icon>mdi-pencil</v-icon>
                         </v-list-item-icon>
                         <v-list-item-title>Editar</v-list-item-title>
                       </v-list-item>
-                      <v-list-item @click="excluirAluno(item.RA)">
+                      <v-list-item @click="deleteStudent(item.RA)">
                         <v-list-item-icon>
                           <v-icon>mdi-delete</v-icon>
                         </v-list-item-icon>
@@ -67,42 +67,43 @@
             Nenhum resultado encontrado.
           </v-alert>
 
-          <v-dialog v-model="addAlunoDialog" max-width="500px">
+          <v-dialog v-model="addStudentDialog" max-width="500px">
             <v-card>
               <v-card-title>
                 Adicionar Aluno
               </v-card-title>
               <v-card-text>
                 <v-form ref="form">
-                  <v-text-field v-model="RA" label="RA" outlined></v-text-field>
-                  <v-text-field v-model="nome" label="Nome" outlined></v-text-field>
-                  <v-text-field v-model="cpf" label="CPF" outlined></v-text-field>
-                  <v-text-field v-model="email" label="Email" outlined></v-text-field>
+                  <v-text-field v-model="RA" label="RA * " outlined :rules="[requiredRule]" required></v-text-field>
+                  <v-text-field v-model="nome" label="Nome * " outlined :rules="[requiredRule]" required></v-text-field>
+                  <v-text-field v-model="cpf" label="CPF * " outlined :rules="[requiredRule]" required></v-text-field>
+                  <v-text-field v-model="email" label="Email * " outlined :rules="[requiredRule, emailRule]"
+                    required></v-text-field>
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="primary" @click="addAluno">Salvar</v-btn>
-                <v-btn @click="cancelAddAluno">Cancelar</v-btn>
+                <v-btn color="primary" :disabled="!formIsValid" @click="addStudent">Salvar</v-btn>
+                <v-btn @click="cancelAddStudent">Cancelar</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
 
-          <v-dialog v-model="editAlunoDialog" max-width="600px">
+          <v-dialog v-model="editStudentDialog" max-width="600px">
             <v-card>
               <v-card-title>
                 Editar Aluno
               </v-card-title>
               <v-card-text>
                 <v-form>
-                  <v-text-field v-model="alunoSelecionado.RA" label="RA" readonly outlined></v-text-field>
-                  <v-text-field v-model="alunoSelecionado.nome" label="Nome" outlined></v-text-field>
-                  <v-text-field v-model="alunoSelecionado.cpf" label="CPF" outlined></v-text-field>
-                  <v-text-field v-model="alunoSelecionado.email" label="Email" outlined></v-text-field>
+                  <v-text-field v-model="selectedStudent.RA" label="RA" readonly outlined></v-text-field>
+                  <v-text-field v-model="selectedStudent.nome" label="Nome" outlined></v-text-field>
+                  <v-text-field v-model="selectedStudent.cpf" label="CPF" outlined></v-text-field>
+                  <v-text-field v-model="selectedStudent.email" label="Email" outlined></v-text-field>
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="primary" @click="salvarAlunoEditado">Salvar</v-btn>
-                <v-btn @click="cancelaEditAluno">Cancelar</v-btn>
+                <v-btn color="primary" @click="saveStudentEdit">Salvar</v-btn>
+                <v-btn @click="cancelStudentEdit">Cancelar</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -129,9 +130,9 @@ export default {
   data() {
     return {
       drawer: true,
-      selectedPage: 'alunos',
+      selectedPage: 'Students',
       searchText: '',
-      alunos: [],
+      Students: [],
       headers: [
         { text: 'Registro Academico', value: 'RA' },
         { text: 'Nome', value: 'nome' },
@@ -142,114 +143,140 @@ export default {
       nome: '',
       cpf: '',
       email: '',
-      addAlunoDialog: false,
 
-      editAlunoDialog: false, // estado do diálogo
-      alunoSelecionado: {},
-      alunoEditando: {},
-      aluno: {}
+      addStudentDialog: false,
+      editStudentDialog: false,
 
+      selectedStudent: {},
+      studentEditing: {},
+      aluno: {},
+
+      showAlert: false,
+      alertMessage: "",
+      requiredRule: (value) => !!value || "Campo obrigatório.",
+      emailRule: (value) => {
+        const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+        return emailRegex.test(value) || "E-mail inválido.";
+      }
     };
   },
 
+  computed: {
+    formIsValid() {
+      return (
+        !!this.RA &&
+        !!this.nome &&
+        !!this.cpf &&
+        !!this.email &&
+        this.emailRule(this.email) === true
+      );
+    }
+  },
+
   created() {
-    this.selectedPage = 'alunos';
-    this.getAlunos();
+    this.selectedPage = 'Students';
+    this.getStudents();
   },
 
   methods: {
     selectPage(page) {
-      this.selectedPage = 'alunos';
-      if (page == 'alunos') {
-        this.getAlunos();
+      this.selectedPage = 'Students';
+      if (page == 'Students') {
+        this.getStudents();
       }
     },
 
-    addAluno() {
+    addStudent() {
       const formData = {
         RA: this.RA,
         nome: this.nome,
         cpf: this.cpf,
         email: this.email
       };
-      axios.post('http://localhost:8000/api/alunos/store', formData)
+      axios.post('http://localhost:8000/api/students/store', formData)
         .then(response => {
           console.log(response.data);
-          this.addAlunoDialog = false;
+          this.addStudentDialog = false;
           this.$refs.form.reset();
           this.$emit('aluno-adicionado', response.data.data);
+          this.getStudents();
         })
         .catch(error => {
           console.error(error);
         });
+
     },
 
-    cancelAddAluno() {
-      this.addAlunoDialog = false;
+    cancelAddStudent() {
+      this.RA = "";
+      this.nome = "";
+      this.cpf = "";
+      this.email = "";
+      this.showAlert = false;
+      this.alertMessage = "";
+      this.addStudentDialog = false;
+    },
+
+    cancelStudentEdit() {
+      this.addStudentDialog = false;
       this.RA = '';
       this.nome = '';
       this.cpf = '';
       this.email = '';
     },
 
-    cancelaEditAluno() {
-      this.addAlunoDialog = false;
-      this.RA = '';
-      this.nome = '';
-      this.cpf = '';
-      this.email = '';
-    },
-
-    selecionaAlunoParaEditar(aluno) {
+    selectEditStudent(aluno) {
       // Salva as informações do aluno antes de editar
-      this.alunoAntesDeEditar = {
+      this.studentBeforeEdit = {
         RA: aluno.RA,
         nome: aluno.nome,
         cpf: aluno.cpf,
         email: aluno.email
       };
-      this.alunoSelecionado = aluno;
-      this.editAlunoDialog = true; // abre o dialog
+      this.selectedStudent = aluno;
+      this.editStudentDialog = true;
     },
-    salvarAlunoEditado() {
+
+    saveStudentEdit() {
       const formData = new FormData();
-      const alunoOriginal = { ...this.alunoSelecionado };
-      const alunoEditado = {};
+      const mainStudent = { ...this.selectedStudent };
+      const editedStudent = {};
       const editData = {};
 
-      // Copia as informações do aluno editado para a variável alunoEditando
-      this.alunoEditando = { ...this.alunoSelecionado };
+      // Copia as informações do aluno editado para a variável studentEditing
+      this.studentEditing = { ...this.selectedStudent };
 
       // Atualiza as informações do aluno editado com as informações preenchidas no formulário
-      for (const propriedade in this.alunoEditando) {
-        if (this.alunoEditando[propriedade] !== this.alunoAntesDeEditar[propriedade]) {
-          formData.append(propriedade, this.alunoEditando[propriedade]);
-          alunoEditado[propriedade] = this.alunoEditando[propriedade];
-          editData[propriedade] = `${propriedade}: ${this.alunoEditando[propriedade]}`;
+      for (const propriedade in this.studentEditing) {
+        if (this.studentEditing[propriedade] !== this.studentBeforeEdit[propriedade]) {
+          formData.append(propriedade, this.studentEditing[propriedade]);
+          editedStudent[propriedade] = this.studentEditing[propriedade];
+          editData[propriedade] = `${propriedade}: ${this.studentEditing[propriedade]}`;
         }
       }
 
       // Verifica se houve alteração no aluno
-      const haAlteracao = Object.keys(alunoEditado).length > 0;
+      const editTrue = Object.keys(editedStudent).length > 0;
 
       // Se houver alteração, envia a solicitação PUT para atualizar o aluno
-      if (haAlteracao) {
-        axios.put(`http://localhost:8000/api/alunos/${alunoOriginal.RA}`, alunoEditado)
+      if (editTrue) {
+        axios.put(`http://localhost:8000/api/students/${mainStudent.RA}`, editedStudent)
           .then(response => {
             console.log(response.data);
-            console.log(`Informações do aluno antes da edição: ${JSON.stringify(alunoOriginal)}`);
-            console.log(`Informações do aluno após a edição: ${JSON.stringify(this.alunoEditando)}`);
+            console.log(`Informações do aluno antes da edição: ${JSON.stringify(mainStudent)}`);
+            console.log(`Informações do aluno após a edição: ${JSON.stringify(this.studentEditing)}`);
             console.log(`Alterações feitas no aluno: ${JSON.stringify(editData)}`);
-            this.editAlunoDialog = false;
+            this.editStudentDialog = false;
           })
           .catch(error => {
             console.error(error);
           });
       } else {
         console.log('Nenhuma alteração foi feita no aluno.');
-        this.editAlunoDialog = false;
+        this.editStudentDialog = false;
       }
     },
+
     show() {
       let params = {};
       if (this.searchText) {
@@ -263,21 +290,21 @@ export default {
           }
         }
       }
-      axios.get('http://localhost:8000/api/alunos/show', {
+      axios.get('http://localhost:8000/api/students/show', {
         params: params
       })
         .then(response => {
-          this.alunos = response.data;
+          this.Students = response.data;
         })
         .catch(error => {
           console.log(error);
         });
     },
 
-    getAlunos() {
-      axios.get('http://localhost:8000/api/alunos')
+    getStudents() {
+      axios.get('http://localhost:8000/api/students')
         .then(response => {
-          this.alunos = response.data;
+          this.Students = response.data;
         })
         .catch(error => {
           console.log(error);
@@ -285,16 +312,15 @@ export default {
     },
 
 
-    excluirAluno(RA) {
+    deleteStudent(RA) {
       const confirmar = confirm(`Tem certeza que deseja excluir o aluno de RA ${RA}?`);
       if (confirmar) {
-        axios.delete(`http://localhost:8000/api/alunos/${RA}`)
+        axios.delete(`http://localhost:8000/api/students/${RA}`)
           .then(response => {
             console.log(response.data);
-            // Remover o aluno da lista de alunos
-            const index = this.alunos.findIndex(aluno => aluno.RA === RA);
+            const index = this.Students.findIndex(aluno => aluno.RA === RA);
             if (index !== -1) {
-              this.alunos.splice(index, 1);
+              this.Students.splice(index, 1);
             }
           })
           .catch(error => {
@@ -308,11 +334,11 @@ export default {
       }
     },
 
-    openAddAlunoDialog() {
-      this.addAlunoDialog = true;
+    AddStudentDialog() {
+      this.addStudentDialog = true;
     },
-    openEditAlunoDialog() {
-      this.editAlunoDialog = true;
+    openStudentlunoDialog() {
+      this.editStudentDialog = true;
     }
   }
 };
